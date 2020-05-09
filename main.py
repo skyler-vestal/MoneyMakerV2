@@ -7,6 +7,3 @@ def getSellerPrice(buyer):
     deduct += max(.01, buyer_rd)
     seller = round(buyer - deduct, 2)
     return seller
-
-for i in range(1, 100):
-    print(i/100, getSellerPrice(i/100))
