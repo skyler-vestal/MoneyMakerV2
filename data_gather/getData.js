@@ -3,7 +3,20 @@ info = fs.readFileSync("requested_data/user.info");
 data = info.toString().split("\r\n");
 username = data[0];
 password = data[1];
-shared_secret = data[2]; 
+shared_secret = data[2];
+
+const request = require('request');
+const cheerio = require('cheerio');
+var urlStem = 'https://steamcommunity.com/market/listings/730/'; 
+weaponFile = fs.readFileSync("requested_data/skinList.info").toString();
+var sep = ['\r\n', ','];
+weapons = weaponFile.split(new RegExp(sep.join('|'), 'g'));
+var skinTypes = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred'];
+// for (i = 0; i < weapons.length; i += 2) {
+//     for (j = 0; j < skinTypes.length; j++) {
+//         console.log(urlStem + weapons[i] + " (" + skinTypes[j] + ")");
+//     }
+// }
 
 
 var Steam = require("steam"),
@@ -43,8 +56,8 @@ var Steam = require("steam"),
         CSGOCli.on("ready", function() {
             util.log("node-csgo ready.");
                 
-                console.log("item request");
-                //steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20M2590076190517757054A17842144863D7100494772439222079
+                console.log("collection item data");
+                
                 CSGOCli.itemDataRequest("0", "17842144863", "7100494772439222079", "2590076190517757054");
                 
                 CSGOCli.on("itemData", function(itemdata) {
