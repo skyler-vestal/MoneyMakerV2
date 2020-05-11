@@ -12,8 +12,6 @@ for tr in table.find_all('tr'):
     data = tr.find_all('td')
     data = [i.text.strip() for i in data]
     if len(data) != 0:
-        coll = data[0]
-        if "Case" in data[0]:
-            coll = coll[0:len(coll) - 5]
-        str += "{} | {},{}\n".format(data[1], data[2], coll)
+        str += "{} | {}\n".format(data[1], data[2])
+str = str[:len(str) - 1]
 file.write(str)
