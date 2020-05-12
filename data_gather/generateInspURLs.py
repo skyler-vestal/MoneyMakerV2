@@ -1,8 +1,11 @@
-import urllib.error as err
-import urllib.request as req
 import json
 from bs4 import BeautifulSoup
 import time
+
+import os
+from sys import path
+path.insert(0, os.getcwd() + '/proxy')
+from proxy_requests import ProxyRequests
 
 requestAmount = 20
 
@@ -10,13 +13,18 @@ skinTypes = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle
 f = open("requested_data/skinList.info", encoding='utf8')
 skinList = f.read().splitlines()
 
+pReq = ProxyRequests()
+base_headers = {
+    'Accept-Language': 'en-US',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0'
+}
+
+
 def check_request(url):
     mPage = None
-    try:
-        mPage = req.urlopen(reqUrl)
-    except err.HTTPError as e:
-        print(e)
-        time.sleep(60)
+    mPage = pReq.get(reqUrl)
+    if mPage is None:
+        print('Uh oh')
     return mPage
 
 stemUrl = 'https://steamcommunity.com/market/listings/730/'
@@ -28,8 +36,9 @@ for skinName in skinList:
         reqUrl = stemUrl + fullSkinName + query
         reqUrl = reqUrl.replace(' ', '%20')
         print("Writing data for " + fullSkinName)
-        mPage = None
+        mPage = check_request(reqUrl)
         while mPage is None:
+            time.sleep(1)
             mPage = check_request(reqUrl)
         data = json.loads(mPage.read().decode())
         soup = BeautifulSoup(data['results_html'], 'lxml')
