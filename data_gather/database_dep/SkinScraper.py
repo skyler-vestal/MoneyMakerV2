@@ -31,7 +31,7 @@ def __scrapeMarketPage__(mPage, skinName, skinType, statTrak):
     data = json.loads(mPage.read().decode())
     soup = BeautifulSoup(data['results_html'], 'lxml')
     prices_html = soup.find_all('span', {"class": "market_listing_price market_listing_price_with_fee"})
-    prices = [i.text.strip() for i in prices_html]
+    prices = [i.text.strip()[1:] for i in prices_html]
     skinSplit = skinName.split(" | ")
     weapon = skinSplit[0]
     weaponSkin = skinSplit[1]
