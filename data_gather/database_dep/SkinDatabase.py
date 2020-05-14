@@ -34,15 +34,13 @@ class SkinDB:
     
     def addSkin(self, skinObj):
         if not self.__entryExists__(skinObj):
-            print("New skin being added: {} | {} (MarketID: {})".format(skinObj.weapon,
-                 skinObj.skin_name, skinObj.market_id))
             self.c.execute("INSERT INTO skins VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
                 (skinObj.collection, skinObj.grade, skinObj.weapon, skinObj.skin_name, skinObj.stat_trak, skinObj.price,
                 skinObj.asset_id, skinObj.dick_id, skinObj.market_id, skinObj.float))
     
     def removeSkin(self, skinObj):
         if self.__entryExists__(skinObj):
-            print("New skin being removed: {} | {} ({}) --- (MarketID: {})".format(skinObj.weapon,
+            print("Skin being removed: {} | {} ({}) --- (MarketID: {})".format(skinObj.weapon,
                  skinObj.skin_name, skinObj.grade, skinObj.market_id))
             self.c.execute("DELETE FROM skins WHERE market_id=?", (skinObj.market_id,))
         else:
@@ -56,18 +54,19 @@ class SkinDB:
 
     def shaveOldSkins(self, skinList):
         sample = skinList[0]
-        dbList = self.c.execute("SELECT * FROM skins WHERE weapon=? AND grade=? AND skin_name=? AND stat_trak=?", 
-                sample.weapon, sample.grade, sample.skin_name, sample.stat_trak)
+        self.c.execute("SELECT * FROM skins WHERE weapon=? AND grade=? AND skin_name=? AND stat_trak=?", 
+                (sample.weapon, sample.grade, sample.skin_name, sample.stat_trak))
+        dbList = self.c.fetchall()
         for dbSkinData in dbList:
             dbSkin = Skin(dbSkinData)
-            print(dbSkin)
             present = False
             for mSkin in skinList:
-                if mSkin.market_id == dbSkin.market_id:
+                # idk why I have to make them strings for the check to work. Diff encoding?
+                if str(mSkin.market_id) == str(dbSkin.market_id):
                     present = True
                     break
             if not present:
-                removeSkin(dbSkin)
+                self.removeSkin(dbSkin)
         self.conn.commit()
 
     def commit(self):

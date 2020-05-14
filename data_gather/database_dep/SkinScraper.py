@@ -3,7 +3,7 @@ import urllib.request as req
 import json
 from bs4 import BeautifulSoup
 
-requestAmount = 10
+requestAmount = 50
 
 rarity = ['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
 stemUrl = 'https://steamcommunity.com/market/listings/730/'

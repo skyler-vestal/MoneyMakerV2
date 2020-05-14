@@ -17,7 +17,9 @@ index = 0
 for skin in skinList:
     for skinType in skinTypes:
         mSkins = SkinScraper.getMarketList(skin, skinType, False)
-        skins.addSkins([Skin(x) for x in mSkins])
+        skinEntries = [Skin(x) for x in mSkins]
+        skins.shaveOldSkins(skinEntries)
+        skins.addSkins(skinEntries)
     index += 1
     if index > 3:
         break
