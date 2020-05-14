@@ -71,10 +71,10 @@ for urlIndex in range(startIndex, endIndex + 1):
                         quality = q
                         break
                 sellListings = rowData[8]
-                if sellListings == '':
+                if sellListings == '' or '$' in str(sellListings):
                     sellListings = 0
                 boughtListings = rowData[14]
-                if boughtListings == '':
+                if boughtListings == '' or '$' in str(boughtListings):
                     boughtListings = 0
                 skinData = [title, quality, stat_trak, boughtListings, sellListings]
                 tmpString = str(title)
