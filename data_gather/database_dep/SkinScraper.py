@@ -2,12 +2,13 @@ import urllib.error as err
 import urllib.request as req
 import json
 from bs4 import BeautifulSoup
+from time import sleep
 
-requestAmount = 50
+cooldown_time = 120
 
 rarity = ['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
 stemUrl = 'https://steamcommunity.com/market/listings/730/'
-query = '/render?start=0&count={}&currency=1&language=english&format=json'.format(requestAmount)
+query = '/render?start=0&count={}&currency=1&language=english&format=json'
 
 def __check_request__(url):
     mPage = None
@@ -18,12 +19,16 @@ def __check_request__(url):
         mPage = None
     return mPage
 
-def getMarketList(skinName, skinType, statTrak):
-    statName = "StatTrak™ " if statTrak else ""
+def getMarketList(skinName, skinType, statTrak, reqNum):
+    statName = "StatTrak%E2%84%A2%20" if statTrak == "True" else ""
     fullSkinName = statName + skinName + " (" + skinType + ")"
-    reqUrl = stemUrl + fullSkinName + query
+    reqUrl = stemUrl + fullSkinName + query.format(reqNum)
     reqUrl = reqUrl.replace(' ', '%20')
     mPage = __check_request__(reqUrl)
+    while mPage is None:
+        print("Requested page pulled up as none. Waiting {} seconds".format(cooldown_time))
+        sleep(cooldown_time)
+        mPage = __check_request__(reqUrl)
     return __scrapeMarketPage__(mPage, skinName, skinType, statTrak) if mPage is not None else None
 
 def __scrapeMarketPage__(mPage, skinName, skinType, statTrak):
