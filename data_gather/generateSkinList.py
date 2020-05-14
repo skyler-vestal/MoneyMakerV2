@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 skin_types = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
 skip_words = ['Knife', 'Bayonet', 'Karambit', 'Daggers']
 skinList = []
+skinRange = []
 
 startIndex = 13
 endIndex = 1267
@@ -27,16 +28,21 @@ if endSomewhere != '':
         print("Input not an integer.")
         exit()
 
-file = open("requested_data/skinList.info", tag, encoding='utf-8')
+skin_file = open("requested_data/skinList.info", tag, encoding='utf-8')
+range_file = open("requested_data/skinRange.info", tag, encoding='utf-8')
 url = 'https://csgostash.com/skin/'
 
 def closeFile():
     skinList.sort()
+    skinRange.sort()
     printStr = "".join(skinList)
     printStr = printStr[:len(printStr) - 1]
-    file.write(printStr)
-    file.close()
-
+    skin_file.write(printStr)
+    skin_file.close()
+    printStr = "".join(skinRange)
+    printStr = printStr[:len(printStr) - 1]
+    range_file.write(printStr)
+    range_file.close()
 
 for urlIndex in range(startIndex, endIndex + 1):
     fUrl = url + str(urlIndex)
@@ -81,6 +87,9 @@ for urlIndex in range(startIndex, endIndex + 1):
                 for pt in skinData[1:]:
                     tmpString += ',' + str(pt)
                 skinList.append(tmpString + '\n')
+        min = soup.findAll("div", {"class": "marker-value cursor-default"})[0].text
+        max = soup.findAll("div", {"class": "marker-value cursor-default"})[1].text
+        skinRange.append("{},{},{}\n".format(title, min, max))
 print("Success! Writing to file.")
 closeFile()
 
