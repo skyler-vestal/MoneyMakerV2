@@ -1,21 +1,86 @@
 import requests
+import time
 from bs4 import BeautifulSoup
 
-file = open("requested_data/skinList.info", "w", encoding='utf-8')
-url = 'https://counterstrike.fandom.com/wiki/Skins/List'
-request = requests.get(url).text
-soup = BeautifulSoup(request, 'lxml')
-tables = soup.findAll('table')
+skin_types = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
+skip_words = ['Knife', 'Bayonet', 'Karambit', 'Daggers']
 skinList = []
-for table in tables:
-    for tr in table.find_all('tr'):
-        data = tr.find_all('td')
-        data = [i.text.strip() for i in data]
-        if len(data) != 0:
-            skinList.append("{} | {}\n".format(data[1], data[2]))
-skinList.sort()
-str = ""
-for skin in skinList:
-    str += skin
-str = str[:len(str) - 1]
-file.write(str)
+
+startIndex = 13
+endIndex = 1267
+
+rewrite = input("Rewrite file? (y/n): ")
+tag = "w" if rewrite == 'y' else 'a'
+
+startSomewhere = input("Custom start index? (nothing if from the start): ")
+if startSomewhere != '':
+    try:
+        startIndex = int(startSomewhere)
+    except ValueError:
+        print("Input not an integer.")
+        exit()
+endSomewhere = input("Custom end index? (nothing if at total end): ")
+if endSomewhere != '':
+    try:
+        endIndex = int(endSomewhere)
+    except ValueError:
+        print("Input not an integer.")
+        exit()
+
+file = open("requested_data/skinList.info", tag, encoding='utf-8')
+url = 'https://csgostash.com/skin/'
+
+def closeFile():
+    skinList.sort()
+    printStr = "".join(skinList)
+    printStr = printStr[:len(printStr) - 1]
+    file.write(printStr)
+    file.close()
+
+
+for urlIndex in range(startIndex, endIndex + 1):
+    fUrl = url + str(urlIndex)
+    try:
+        request = requests.get(fUrl).text
+    except:
+        print("Error detected with retrieving webpage.")
+        print("Closing file.")
+        closeFile()
+
+    soup = BeautifulSoup(request, 'lxml')
+    title = soup.findAll("div", {"class": "well result-box nomargin"})
+    if len(title) == 0:
+        print("WARNING: Webpage for skin index {} missing. Skipping".format(urlIndex))
+        continue
+    title = title[0].text.split('\n')[1]
+
+    if any(word in title for word in skip_words):
+        print("WARNING: Skin index {} has a skip word (knife?). Skipping".format(urlIndex))
+    else:
+        print("Processing skin index {} ({})".format(urlIndex, title))
+        table_area = soup.findAll("div", {"class": "table-responsive"})[0]
+        table = table_area.find("table")
+        for row in table.findAll('tr')[1:]:
+            rowData = row.text.split("\n")
+            raw_quality = rowData[2]
+            if 'Souvenir' not in raw_quality:
+                quality = None
+                stat_trak = 'StatTrak' in raw_quality
+                for q in skin_types:
+                    if q in raw_quality:
+                        quality = q
+                        break
+                sellListings = rowData[8]
+                if sellListings == '':
+                    sellListings = 0
+                boughtListings = rowData[14]
+                if boughtListings == '':
+                    boughtListings = 0
+                skinData = [title, quality, stat_trak, boughtListings, sellListings]
+                tmpString = str(title)
+                for pt in skinData[1:]:
+                    tmpString += ',' + str(pt)
+                skinList.append(tmpString + '\n')
+print("Success! Writing to file.")
+closeFile()
+
