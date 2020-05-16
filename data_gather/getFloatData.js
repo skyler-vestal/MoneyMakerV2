@@ -121,7 +121,7 @@ async function updateFloats() {
 
 function requestData(skin, index, len) {
     CSGOCli.itemDataRequest("0", skin.asset_id, skin.dick_id, skin.market_id);
-    console.log(`[${index}/${len}]: Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);
+    console.log(`[${index}/${len * userIndex + len}]: Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);
 }
 
 function getIDArr(lowInt, highInt) {
