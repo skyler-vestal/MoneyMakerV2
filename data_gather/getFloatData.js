@@ -1,9 +1,19 @@
+totalUsers = 3;
+
+userIndex = 0;
+var args = process.argv.slice(2);
+userIndex = parseInt(args[0]);
+console.log("User profile: " + userIndex);
+
 var fs = require("fs");
 info = fs.readFileSync("requested_data/user.info");
 data = info.toString().split("\r\n");
-username = data[0];
-password = data[1];
-shared_secret = data[2];
+username = data[userIndex * totalUsers];
+password = data[userIndex * totalUsers + 1];
+shared_secret = data[userIndex * totalUsers + 2];
+refreshCount = 0;
+
+curSkins = []
 
 db_path = "F:/Dev/py-workspace/SkinDatabase/skins.db"
 
@@ -15,9 +25,8 @@ var Steam = require("steam"),
     steamUser = new Steam.SteamUser(steamClient),
     steamFriends = new Steam.SteamFriends(steamClient),
     steamGC = new Steam.SteamGameCoordinator(steamClient, 730),
-    CSGOCli = new csgo.CSGOClient(steamUser, steamGC, false);
-    readlineSync = require("readline-sync")
-    readline = require("readline")
+    CSGOCli = new csgo.CSGOClient(steamUser, steamGC, false),
+    readlineSync = require("readline-sync");
 
 const sqlite3 = require('sqlite3');
 let db = new sqlite3.Database(db_path, sqlite3.OPEN_READWRITE, (err) => {
@@ -53,6 +62,7 @@ db.configure("busyTimeout", 10000);
         CSGOCli.on("ready", function() {
             util.log("node-csgo ready.");
                 updateFloats();
+                setInterval(updateFloats, 1000 * 60 * 20);
 
                 CSGOCli.on("itemData", function(itemdata) {
                     itemIDData = itemdata.iteminfo.itemid;
@@ -87,19 +97,31 @@ db.configure("busyTimeout", 10000);
         fs.writeFile('servers.json', JSON.stringify(servers, null, 2));
     }
 
-function updateFloats() {
-    db.all("SELECT * FROM skins WHERE float=0", [], (err, result) => {
+async function updateFloats() {
+    if (curSkins.length > 0) {
+        for (i = 0; i < curSkins.length; i++) {
+            clearTimeout(curSkins[i]);
+        }
+    }
+    query = "SELECT * FROM skins WHERE float=0";
+    console.log("Getting 0 floats with query: " + query);
+    db.all(query, [], (err, result) => {
         if (err) {
             console.log(err);
         } else {
-            result.forEach((skin, index) => {
-                setTimeout(function() {
-                    CSGOCli.itemDataRequest("0", skin.asset_id, skin.dick_id, skin.market_id);
-                    console.log(`Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);}, 
-                        1100 * (index + 1));
-            });
+            section = Math.floor(result.length/totalUsers);
+            realIndex = 0;
+            for (let i = section * userIndex; i < section * userIndex + section; i++) {
+                curSkins.push(setTimeout(function() {requestData(result[i], i, section)}, 1100 * (realIndex + 1)));
+                realIndex++;
+            }
         }
     });
+}
+
+function requestData(skin, index, len) {
+    CSGOCli.itemDataRequest("0", skin.asset_id, skin.dick_id, skin.market_id);
+    console.log(`[${index}/${len}]: Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);
 }
 
 function getIDArr(lowInt, highInt) {
