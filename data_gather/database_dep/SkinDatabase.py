@@ -20,9 +20,9 @@ class SkinDB:
                 skin_name text,
                 stat_trak integer,
                 price real,
-                asset_id integer,
-                dick_id integer,
-                market_id integer,
+                asset_id text,
+                dick_id text,
+                market_id text,
                 float real
                 )""")
             self.conn.commit()

@@ -1,5 +1,6 @@
 import urllib.error as err
 import urllib.request as req
+from urllib.parse import quote
 import json
 from bs4 import BeautifulSoup
 from time import sleep
@@ -17,11 +18,14 @@ def __check_request__(url):
     except err.HTTPError as e:
         print("WARNING: " + str(e) + ": " + url)
         mPage = None
+    except:
+        print("WARNING: Unexpected error (timeout?): " + url)
+        mPage = None
     return mPage
 
 def getMarketList(skinName, skinType, statTrak, reqNum):
     statName = "StatTrak%E2%84%A2%20" if statTrak == "True" else ""
-    fullSkinName = statName + skinName + " (" + skinType + ")"
+    fullSkinName = statName + quote(skinName) + " (" + skinType + ")"
     reqUrl = stemUrl + fullSkinName + query.format(reqNum)
     reqUrl = reqUrl.replace(' ', '%20')
     mPage = __check_request__(reqUrl)
