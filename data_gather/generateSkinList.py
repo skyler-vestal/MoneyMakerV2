@@ -3,8 +3,8 @@ import time
 from bs4 import BeautifulSoup
 
 skin_types = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
+skin_tiers = []
 skip_words = ['Knife', 'Bayonet', 'Karambit', 'Daggers']
-skinList = []
 skinRange = []
 
 startIndex = 13

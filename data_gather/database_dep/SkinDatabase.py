@@ -15,6 +15,7 @@ class SkinDB:
             print("No table found. Creating new table.")
             self.c.execute("""CREATE TABLE skins (
                 collection text,
+                type text,
                 grade text,
                 weapon text,
                 skin_name text,
@@ -34,8 +35,8 @@ class SkinDB:
     
     def addSkin(self, skinObj):
         if not self.__entryExists__(skinObj):
-            self.c.execute("INSERT INTO skins VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                (skinObj.collection, skinObj.grade, skinObj.weapon, skinObj.skin_name, skinObj.stat_trak, skinObj.price,
+            self.c.execute("INSERT INTO skins VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                (skinObj.collection, skinObj.type, skinObj.grade, skinObj.weapon, skinObj.skin_name, skinObj.stat_trak, skinObj.price,
                 skinObj.asset_id, skinObj.dick_id, skinObj.market_id, skinObj.float))
     
     def removeSkin(self, skinObj):

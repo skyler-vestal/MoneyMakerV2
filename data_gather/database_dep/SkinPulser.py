@@ -3,13 +3,13 @@ import time
 class SkinPulse:
     freq_list = [1000, 700, 320, 50]
     req_list = [100, 75, 60, 50]
-    update_list = [10, 40, 60, 80]
+    update_list = [9, 21, 43, 61]
 
     def __init__(self, *args):
         self.currTick = args[0] if len(args) > 0 else 1
         print("Starting Tick: {}".format(self.currTick))
         self.__initData__()
-        self.timeCheck = time.time()
+        self.timeCheck = time.time() - 1
 
     def pulse(self):
         if self.__check_time__():

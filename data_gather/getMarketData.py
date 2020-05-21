@@ -35,5 +35,5 @@ try:
                 skinsDB.addSkins(skinEntries)
 except KeyboardInterrupt:
     print("Closing queries")
-    print("NOTE: Tick to resume on in SkinPulse is {}".format(skinP.currTick))
+    print("NOTE: Tick to resume on in SkinPulse is {}".format(skinP.currTick - 1))
     skinsDB.close()

@@ -1,4 +1,6 @@
 totalUsers = 3;
+minRefresh = 2;
+requestWait = 1.1;
 
 userIndex = 0;
 var args = process.argv.slice(2);
@@ -62,7 +64,7 @@ db.configure("busyTimeout", 10000);
         CSGOCli.on("ready", function() {
             util.log("node-csgo ready.");
                 updateFloats();
-                setInterval(updateFloats, 1000 * 60 * 20);
+                setInterval(updateFloats, 1000 * 60 * minRefresh);
 
                 CSGOCli.on("itemData", function(itemdata) {
                     itemIDData = itemdata.iteminfo.itemid;
@@ -112,7 +114,7 @@ async function updateFloats() {
             section = Math.floor(result.length/totalUsers);
             realIndex = 0;
             for (let i = section * userIndex; i < section * userIndex + section; i++) {
-                curSkins.push(setTimeout(function() {requestData(result[i], i, section)}, 1100 * (realIndex + 1)));
+                curSkins.push(setTimeout(function() {requestData(result[i], i, section)}, (requestWait * 1000) * (realIndex + 1)));
                 realIndex++;
             }
         }
@@ -121,7 +123,7 @@ async function updateFloats() {
 
 function requestData(skin, index, len) {
     CSGOCli.itemDataRequest("0", skin.asset_id, skin.dick_id, skin.market_id);
-    console.log(`[${index}/${len * userIndex + len}]: Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);
+    console.log(`[${index - (len * userIndex)}/${len}]: Item request: A:${skin.asset_id} D:${skin.dick_id} M:${skin.market_id}`);
 }
 
 function getIDArr(lowInt, highInt) {
@@ -143,8 +145,11 @@ stdin.setRawMode( true );
 stdin.resume();
 stdin.setEncoding( 'utf8' );
 
+shutoff = false;
+
 stdin.on('data', function(key){
   if (key === '\u0003') {
+      shutoff = true;
     console.log("Closing down database and bot.");
     steamClient.disconnect();
     db.close();
@@ -162,4 +167,10 @@ steamClient.connect();
 steamClient.on('connected', function(){
         steamUser.logOn(logOnDetails);
     });
+steamClient.on('error', function(){
+    if (!shutoff) {
+        console.log("Error emitted. Possible log off?: " + steamClient.connected);
+        steamClient.connect();
+    }
+});
 steamClient.on("logOnResponse", onSteamLogOn);

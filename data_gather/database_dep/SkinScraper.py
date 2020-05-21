@@ -7,7 +7,7 @@ from time import sleep
 
 cooldown_time = 120
 
-rarity = ['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
+rarity = ['Consumer', 'Industrial', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
 stemUrl = 'https://steamcommunity.com/market/listings/730/'
 query = '/render?start=0&count={}&currency=1&language=english&format=json'
 
@@ -46,6 +46,7 @@ def __scrapeMarketPage__(mPage, skinName, skinType, statTrak):
     weaponSkin = skinSplit[1]
     collection = ""
     rarityType = ""
+    tierType = ""
     listings = data['listinginfo']
     if len(listings) > 0:
         index = 0
@@ -61,11 +62,17 @@ def __scrapeMarketPage__(mPage, skinName, skinType, statTrak):
                         rarityType = rar
                         break
             if collection == "":
-                collection = assetDetails['descriptions'][4]['value']
+                if statTrak == 'False':
+                    collection = assetDetails['descriptions'][4]['value']
+                else:
+                    for i in range(8, 11):
+                        collection = collection = assetDetails['descriptions'][i]['value']
+                        if collection != " ":
+                            break
             inspUrl = asset['market_actions'][0]['link']
             startIndex = inspUrl.index('D') + 1
             dickid = inspUrl[startIndex:]
-            skin = (collection, skinType, weapon, weaponSkin, statTrak, prices[index], assetid, dickid, listingid)
+            skin = (collection, rarityType, skinType, weapon, weaponSkin, statTrak, prices[index], assetid, dickid, listingid)
             returnList.append(skin)
             index += 1
     return returnList
