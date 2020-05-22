@@ -3,9 +3,10 @@ import time
 from bs4 import BeautifulSoup
 
 skin_types = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
-skin_tiers = []
 skip_words = ['Knife', 'Bayonet', 'Karambit', 'Daggers']
 skinRange = []
+skinList = []
+skinPrice = []
 
 startIndex = 13
 endIndex = 1267
@@ -30,19 +31,20 @@ if endSomewhere != '':
 
 skin_file = open("requested_data/skinList.info", tag, encoding='utf-8')
 range_file = open("requested_data/skinRange.info", tag, encoding='utf-8')
+price_file = open("requested_data/skinPrice.info", tag, encoding='utf-8')
 url = 'https://csgostash.com/skin/'
 
-def closeFile():
-    skinList.sort()
-    skinRange.sort()
-    printStr = "".join(skinList)
+def clean_up():
+    closeFile(skin_file, skinList)
+    closeFile(range_file, skinRange)
+    closeFile(price_file, skinPrice)
+
+def closeFile(info_file, skin_list):
+    skin_list.sort()
+    printStr = "".join(skin_list)
     printStr = printStr[:len(printStr) - 1]
-    skin_file.write(printStr)
-    skin_file.close()
-    printStr = "".join(skinRange)
-    printStr = printStr[:len(printStr) - 1]
-    range_file.write(printStr)
-    range_file.close()
+    info_file.write(printStr)
+    info_file.close()
 
 for urlIndex in range(startIndex, endIndex + 1):
     fUrl = url + str(urlIndex)
@@ -51,7 +53,7 @@ for urlIndex in range(startIndex, endIndex + 1):
     except:
         print("Error detected with retrieving webpage.")
         print("Closing file.")
-        closeFile()
+        clean_up()
 
     soup = BeautifulSoup(request, 'lxml')
     title = soup.findAll("div", {"class": "well result-box nomargin"})
@@ -87,9 +89,18 @@ for urlIndex in range(startIndex, endIndex + 1):
                 for pt in skinData[1:]:
                     tmpString += ',' + str(pt)
                 skinList.append(tmpString + '\n')
+                priceListings = rowData[5]
+                if priceListings != '' and '$' in str(priceListings):
+                    price = priceListings.replace('$', '')
+                    price = price.replace(',', '')
+                    priceData = [title, quality, stat_trak, price]
+                    tmpString = str(title)
+                    for pt in priceData[1:]:
+                        tmpString += ',' + str(pt)
+                    skinPrice.append(tmpString + '\n')
         min = soup.findAll("div", {"class": "marker-value cursor-default"})[0].text
         max = soup.findAll("div", {"class": "marker-value cursor-default"})[1].text
         skinRange.append("{},{},{}\n".format(title, min, max))
 print("Success! Writing to file.")
-closeFile()
+clean_up()
 

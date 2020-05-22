@@ -7,7 +7,7 @@ class SkinManager:
     skin_file_path = "data_gather/requested_data/skinRange.info"
 
     def __init__(self, db_path):
-        self.conn = sql.connect(db_path)
+        self.conn = sql.connect(db_path, timeout=10.0)
         self.c = self.conn.cursor()
         self.collection = []
         self.__initData__()
