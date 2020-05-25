@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 skin_types = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
 skip_words = ['Knife', 'Bayonet', 'Karambit', 'Daggers']
+rarity = ['Consumer', 'Industrial', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
 skinRange = []
 skinList = []
 skinPrice = []
@@ -56,11 +57,22 @@ for urlIndex in range(startIndex, endIndex + 1):
         clean_up()
 
     soup = BeautifulSoup(request, 'lxml')
-    title = soup.findAll("div", {"class": "well result-box nomargin"})
-    if len(title) == 0:
+    title = soup.find("div", {"class": "well result-box nomargin"})
+    if title == None:
         print("WARNING: Webpage for skin index {} missing. Skipping".format(urlIndex))
         continue
-    title = title[0].text.split('\n')[1]
+    title = title.text.split('\n')[1]
+
+    collection_data = soup.findAll("p", {"class": "collection-text-label"})
+    coll_index = len(collection_data) - 1
+    collection = collection_data[coll_index].text if coll_index >= 0 else "Contraband"
+
+    tier = soup.find("p", {"class": "nomargin"})
+    tier = tier.text
+    for rar in rarity:
+        if rar in tier:
+            tier = rar
+            break
 
     if any(word in title for word in skip_words):
         print("WARNING: Skin index {} has a skip word (knife?). Skipping".format(urlIndex))
@@ -84,16 +96,16 @@ for urlIndex in range(startIndex, endIndex + 1):
                 boughtListings = rowData[14]
                 if boughtListings == '' or '$' in str(boughtListings):
                     boughtListings = 0
-                skinData = [title, quality, stat_trak, boughtListings, sellListings]
+                skinData = [title, collection, quality, stat_trak, boughtListings, sellListings]
                 tmpString = str(title)
                 for pt in skinData[1:]:
                     tmpString += ',' + str(pt)
                 skinList.append(tmpString + '\n')
                 priceListings = rowData[5]
-                if priceListings != '' and '$' in str(priceListings):
+                if int(boughtListings) < 50 and priceListings != '' and '$' in str(priceListings):
                     price = priceListings.replace('$', '')
                     price = price.replace(',', '')
-                    priceData = [title, quality, stat_trak, price]
+                    priceData = [title, collection, tier, quality, stat_trak, price]
                     tmpString = str(title)
                     for pt in priceData[1:]:
                         tmpString += ',' + str(pt)
