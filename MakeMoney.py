@@ -1,6 +1,6 @@
 from SkinManagerDef import SkinManager
 
-db_path = 'C:\Program Files\MakeMoney\skins.db'
+db_path = 'C:/Users/Dinoswarleafs/Documents/skins.db'
 
 test_file = open("test.info", 'w', encoding='utf-8')
 

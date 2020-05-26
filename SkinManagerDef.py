@@ -74,7 +74,17 @@ class SkinManager:
             tmp_skin.addSkin(price=data[5], collection=data[1])
             tmp_coll = self.__get_coll__(data[1], data[4] == 'True')
             if tmp_coll != None:
-                tmp_coll.addSkin(tmp_skin, data[2])
+                in_coll = False
+                for wepList in tmp_coll.weapons:
+                    if in_coll:
+                        break
+                    for skin in wepList:
+                        if skin.weapon == weapon and skin.skin_name == skin_name:
+                            in_coll = True
+                            skin.addSkin(
+                                weapon=weapon, skin_name=skin_name, condition=data[3])
+                if not in_coll:
+                    tmp_coll.addSkin(tmp_skin, data[2])
         
 
     def __get_coll__(self, coll_name, stat_trak):
