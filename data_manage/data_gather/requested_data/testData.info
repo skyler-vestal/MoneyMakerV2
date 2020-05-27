@@ -1,0 +1,23 @@
+{
+  "iteminfo": {
+    "accountid": null,
+    "itemid": Long { low: 1254974188, high: 4, unsigned: true },
+    "defindex": 7,
+    "paintindex": 801,
+    "rarity": 6,
+    "quality": 4,
+    "paintwear": 1059989716,
+    "paintseed": 822,
+    "killeaterscoretype": null,
+    "killeatervalue": null,
+    "customname": null,
+    "stickers": [],
+    "inventory": 55,
+    "origin": 8,
+    "questid": null,
+    "dropreason": null,
+    "musicindex": null,
+    "entindex": null,
+    "floatvalue": 0.6803104877471924
+  }
+}
