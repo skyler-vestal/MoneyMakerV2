@@ -1,4 +1,4 @@
-from SkinManagerDef import SkinManager
+from data_manage.SkinManagerDef import SkinManager
 
 db_path = 'C:\Program Files\MakeMoney\skins.db'
 
