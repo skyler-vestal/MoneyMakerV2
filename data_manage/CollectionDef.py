@@ -10,6 +10,7 @@ class Collection:
         self.stat_trak = stat_trak
 
     def addSkin(self, skin, ware):
+        skin.addCollectionRef(self)
         index = 0
         for rar in Collection.rarity:
             if rar in ware:

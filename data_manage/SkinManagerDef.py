@@ -15,6 +15,62 @@ class SkinManager:
         self.__initExtra__()
 
     @staticmethod
+    def getOutcomes(ent_list):
+        float_val = SkinManager.getAverageFloat(ent_list)
+        tu_pool = []
+        for ent in ent_list:
+            next_tier = SkinManager.getNextTier(ent)
+            print(next_tier)
+            for skin in next_tier:
+                ents = skin.getEnts(float_val)
+                lowest_ent = SkinManager.getLowestPrice(ents)
+                tu_pool.append((skin.weapon, skin.skin_name, lowest_ent.price))
+        return SkinManager.expected_val(ent_list, tu_pool), tu_pool
+
+    @staticmethod
+    def expected_val(ent_list, tu_pool):
+        raw_invest = 0
+        for ent in ent_list:
+            raw_invest += ent.price
+        raw_price = 0
+        item_length = len(tu_pool)
+        for item in tu_pool:
+            raw_price += item[2]/item_length
+        selling_price = SkinManager.getSellerPrice(raw_price)
+        return selling_price - raw_invest
+
+    @staticmethod
+    def getLowestPrice(ents):
+        lowest_ent = None
+        lowest = float('inf')
+        for ent in ents:
+            if ent.price < lowest:
+                lowest = ent.price
+                lowest_ent = ent
+        return lowest_ent
+
+    @staticmethod
+    def getNextTier(ent):
+        skin = ent.skin
+        collection = skin.collection
+        next_tier = None
+        for i in range(0, len(collection.weapons)):
+            if skin in collection.weapons[i]:
+                next_tier = collection.weapons[i + 1]
+                break
+        if next_tier == None:
+            print("WARNING! Skin was not found in collection")
+        return next_tier
+            
+    @staticmethod
+    def getAverageFloat(ent_list):
+        float_val = 0
+        total_ents = len(ent_list)
+        for ent in ent_list:
+            float_val += ent.sFloat/total_ents
+        return float_val
+
+    @staticmethod
     def getSellerPrice(buyer):
         seller = buyer
         buyer_rd = round(buyer/11.5, 3)

@@ -1,11 +1,17 @@
 class Skin:
 
+    wear_cutoff = [.07, .15, .38, .45, 1.00]
+    conditions = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred']
+
     def __init__(self, **kwargs):
         self.weapon = kwargs.get('weapon')
         self.skin_name = kwargs.get('skin_name')
-        self.sMin = kwargs.get('sMin')
-        self.sMax = kwargs.get('sMax')
-        self.skin_list = []
+        sMin = kwargs.get('sMin') 
+        sMax = kwargs.get('sMax')
+        if sMin != None and sMax != None:
+            self.sMin = float(sMin)
+            self.sMax = float(sMax)
+        self.skin_list = ([], [], [], [], [])
         self.real_info = False
     
     def addSkin(self, **kwargs):
@@ -13,19 +19,42 @@ class Skin:
         assetID = kwargs.get('assetID')
         if assetID == None:
             tmp = self.Entity(price=kwargs.get('price'), collection=kwargs.get('collection'))
+            index = Skin.__condition_index__(kwargs.get('collection'))
         else:
             self.real_info = True
             tmp = self.Entity(assetID=assetID, sFloat=kwargs.get('sFloat'), price=kwargs.get('price'))
-        self.skin_list.append(tmp)
+            index = Skin.__wear_index__(kwargs.get('sFloat'))
+        tmp.addSkinRef(self)
+        self.skin_list[index].append(tmp)
+    
+    def getEnts(self, float_val):
+        return self.skin_list[Skin.__wear_index__(self.getNewfloat(float_val))]
+
+    @staticmethod
+    def __wear_index__(val):
+        for i in range(len(Skin.wear_cutoff)):
+            if (val < Skin.wear_cutoff[i]):
+                return i
+        return -1
+
+    @staticmethod
+    def __condition_index__(val):
+        for i in range(len(Skin.conditions)):
+            if val == Skin.conditions[i]:
+                return i
+
+    def addCollectionRef(self, coll):
+        self.collection = coll
 
     def getNewfloat(self, avgFloat):
-        return sMin + avgFloat * (sMax - sMin)
+        return self.sMin + avgFloat * (self.sMax - self.sMin)
 
     def getLowestPrice(self):
         lowest = float('inf')
-        for ent in self.skin_list:
-            if ent.price < lowest:
-                lowest = ent.price
+        for ents in self.skin_list:
+            for ent in ents:
+                if ent.price < lowest:
+                    lowest = ent.price
         return lowest
 
     def __repr__(self):
@@ -38,6 +67,7 @@ class Skin:
             if self.assetID == None:
                 self.real_info = False
                 self.condition = kwargs.get('condition')
+                self.sFloat = None
             else:
                 self.real_info = True
                 self.sFloat = float(kwargs.get('sFloat'))
@@ -46,3 +76,11 @@ class Skin:
                 tmp_price = float(tmp_price.replace(",", ""))
             self.price = tmp_price
             self.scratch = 0
+
+        def addSkinRef(self, skin):
+            self.skin = skin
+
+        def __repr__(self):
+            if self.real_info:
+                return "({} - {})".format(self.price, self.sFloat)
+            return "({} - {})".format(self.price, self.condition)
