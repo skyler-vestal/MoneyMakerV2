@@ -80,6 +80,9 @@ for urlIndex in range(startIndex, endIndex + 1):
         print("Processing skin index {} ({})".format(urlIndex, title))
         table_area = soup.findAll("div", {"class": "table-responsive"})[0]
         table = table_area.find("table")
+        f_min = soup.findAll("div", {"class": "marker-value cursor-default"})[0].text
+        f_max = soup.findAll("div", {"class": "marker-value cursor-default"})[1].text
+        skinRange.append("{},{},{}\n".format(title, f_min, f_max))
         for row in table.findAll('tr')[1:]:
             rowData = row.text.split("\n")
             raw_quality = rowData[2]
@@ -105,14 +108,11 @@ for urlIndex in range(startIndex, endIndex + 1):
                 if int(boughtListings) < 50 and priceListings != '' and '$' in str(priceListings):
                     price = priceListings.replace('$', '')
                     price = price.replace(',', '')
-                    priceData = [title, collection, tier, quality, stat_trak, price]
+                    priceData = [title, collection, tier, quality, stat_trak, price, f_min, f_max]
                     tmpString = str(title)
                     for pt in priceData[1:]:
                         tmpString += ',' + str(pt)
                     skinPrice.append(tmpString + '\n')
-        min = soup.findAll("div", {"class": "marker-value cursor-default"})[0].text
-        max = soup.findAll("div", {"class": "marker-value cursor-default"})[1].text
-        skinRange.append("{},{},{}\n".format(title, min, max))
 print("Success! Writing to file.")
 clean_up()
 

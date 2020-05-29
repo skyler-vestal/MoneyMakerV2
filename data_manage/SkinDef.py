@@ -18,7 +18,7 @@ class Skin:
         tmp = None
         assetID = kwargs.get('assetID')
         if assetID == None:
-            tmp = self.Entity(price=kwargs.get('price'), collection=kwargs.get('collection'))
+            tmp = self.Entity(price=kwargs.get('price'), condition=kwargs.get('collection'))
             index = Skin.__condition_index__(kwargs.get('collection'))
         else:
             self.real_info = True
@@ -57,7 +57,7 @@ class Skin:
                     lowest = ent.price
         return lowest
 
-    def __repr__(self):
+    def __str__(self):
         info = len(self.skin_list) if self.real_info else "-"
         return "{} - {} ({})".format(self.weapon, self.skin_name, info)
 
@@ -80,7 +80,7 @@ class Skin:
         def addSkinRef(self, skin):
             self.skin = skin
 
-        def __repr__(self):
+        def __str__(self):
             if self.real_info:
                 return "({} - {})".format(self.price, self.sFloat)
             return "({} - {})".format(self.price, self.condition)

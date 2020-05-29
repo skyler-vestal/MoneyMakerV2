@@ -20,11 +20,11 @@ class SkinManager:
         tu_pool = []
         for ent in ent_list:
             next_tier = SkinManager.getNextTier(ent)
-            print(next_tier)
             for skin in next_tier:
                 ents = skin.getEnts(float_val)
                 lowest_ent = SkinManager.getLowestPrice(ents)
-                tu_pool.append((skin.weapon, skin.skin_name, lowest_ent.price))
+                condition = lowest_ent.sFloat if lowest_ent.real_info else lowest_ent.condition
+                tu_pool.append((skin.weapon, skin.skin_name, lowest_ent.price, condition))
         return SkinManager.expected_val(ent_list, tu_pool), tu_pool
 
     @staticmethod
@@ -117,7 +117,7 @@ class SkinManager:
         for data_line in price_lines:
             data = data_line.split(',')
             weapon, skin_name = SkinManager.__parse_head__(data[0])
-            tmp_skin = Skin(weapon=weapon, skin_name=skin_name)
+            tmp_skin = Skin(weapon=weapon, skin_name=skin_name, sMin=data[6], sMax=data[7])
             tmp_skin.addSkin(price=data[5], collection=data[3])
             tmp_coll = self.__get_coll__(data[1], data[4] == 'True')
             if tmp_coll != None:
