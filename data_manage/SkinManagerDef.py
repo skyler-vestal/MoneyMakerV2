@@ -13,6 +13,7 @@ class SkinManager:
         self.collection = []
         self.__initData__()
         self.__initExtra__()
+        self.__sortCollections__()
 
     @staticmethod
     def getOutcomes(ent_list):
@@ -23,8 +24,10 @@ class SkinManager:
             for skin in next_tier:
                 ents = skin.getEnts(float_val)
                 lowest_ent = SkinManager.getLowestPrice(ents)
-                condition = lowest_ent.sFloat if lowest_ent.real_info else lowest_ent.condition
-                tu_pool.append((skin.weapon, skin.skin_name, lowest_ent.price, condition))
+                if lowest_ent != None:
+                    condition = lowest_ent.sFloat if lowest_ent.real_info else lowest_ent.condition
+                    tu_pool.append((skin.weapon, skin.skin_name, lowest_ent.price, 
+                        condition, skin.collection.stat_trak))
         return SkinManager.expected_val(ent_list, tu_pool), tu_pool
 
     @staticmethod
@@ -131,6 +134,12 @@ class SkinManager:
                             skin.addSkin(price=data[5], collection=data[3])
                 if not in_coll:
                     tmp_coll.addSkin(tmp_skin, data[2])
+    
+    def __sortCollections__(self):
+        for col in self.collection:
+            for weps in col.weapons:
+                for skin in weps:
+                    skin.sort_skins_price()
 
     def __add_coll__(self, coll_name, stat_trak, skins, skin_type):
         if len(skins.skin_list) > 0:

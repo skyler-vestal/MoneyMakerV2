@@ -27,8 +27,22 @@ class Skin:
         tmp.addSkinRef(self)
         self.skin_list[index].append(tmp)
     
+    def sort_skins_price(self):
+        for ents in self.skin_list:
+            ents.sort(key = lambda x: x.price)
+
+    def sort_skins_float(self):
+        for ents in skin_list:
+            floats_present = True
+            for ent in ents:
+                if not ent.real_info:
+                    floats_present = False
+                    break
+            if floats_present:
+                ents.sort(key = lambda x: x.sFloat)
+    
     def getEnts(self, float_val):
-        return self.skin_list[Skin.__wear_index__(self.getNewfloat(float_val))]
+        return self.skin_list[Skin.__wear_index__(self.getNewFloat(float_val))]
 
     @staticmethod
     def __wear_index__(val):
@@ -46,16 +60,13 @@ class Skin:
     def addCollectionRef(self, coll):
         self.collection = coll
 
-    def getNewfloat(self, avgFloat):
+    def getNewFloat(self, avgFloat):
         return self.sMin + avgFloat * (self.sMax - self.sMin)
 
-    def getLowestPrice(self):
-        lowest = float('inf')
-        for ents in self.skin_list:
-            for ent in ents:
-                if ent.price < lowest:
-                    lowest = ent.price
-        return lowest
+    def getLowestPriceCondition(self, cond):
+        index = Skin.conditions.index(cond)
+        ents = self.skin_list[index]
+        return ents[0] if len(ents) > 0 else None
 
     def __str__(self):
         info = len(self.skin_list) if self.real_info else "-"
