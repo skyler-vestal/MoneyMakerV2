@@ -10,37 +10,67 @@ class TUAnalyzer:
     def __init__(self):
         self.skins = SkinManager(TUAnalyzer.db_path)
         self.tu_lists = []
+        self.tu_skins = []
 
     def run(self):
-        ent_list = []
-        for i in range(10):
-            ent_list.append(self.skins.collection[0].weapons[2][0].skin_list[3][3])
-        profit, outcome_list = self.skins.getOutcomes(ent_list)
-        self.tu_lists.append([profit, ent_list, outcome_list])
+        self.get_all_best()
+
+    def add_skin(self, ent):
+        if len(self.tu_skins) > 10:
+            print("WARNING! 10 skins have already been added. Skipping.")
+        else:
+            if self.__matches_tu__(ent):
+                self.tu_skins.append(ent)
+            else:
+                name = str(ent)
+                #print(f"WARNING! {name} doesn't match the trade up qualifications. Not adding.")
     
-    def trade_up(self, skins):
-        profit, outcome_list = self.skins.getOutcomes(skins)
-        self.tu_lists.append([profit, skins, outcome_list])    
+    def rem_skin(self, ent):
+        self.tu_skins.remove(ent)
+                
+    def reset_list(self):
+        self.tu_skins = []
+
+    def __matches_tu__(self, ent):
+        return (len(self.tu_skins) == 0 
+                or TUAnalyzer.__skin_match__(ent, self.tu_skins[0]))
+
+    @staticmethod
+    def __skin_match__(ent_1, ent_2):
+        rar_1, st_1 = TUAnalyzer.__get_qualities__(ent_1)
+        rar_2, st_2 = TUAnalyzer.__get_qualities__(ent_2)
+        return rar_1 == rar_2 and st_1 == st_2
+
+    @staticmethod
+    def __get_qualities__(ent):
+        skin_class = ent.skin
+        coll_class = skin_class.collection
+        for index, wep in enumerate(coll_class.weapons):
+            rar = coll_class.rarity[index]
+            for skin in wep:
+                if skin_class == skin:
+                    return rar, coll_class.stat_trak
+        print("Skin not found in collection. This ... should never happen")
+        return None
+    
+    def trade_up(self):
+        profit, outcome_list = self.skins.getOutcomes(self.tu_skins)
+        self.tu_lists.append([profit, self.tu_skins, outcome_list])    
 
     def get_all_best(self):
         total_list = []
-        for i in range(2, 5):
+        for i in range(0, 5):
             total_list.extend(self.get_best_diff(i))
-        total_list.sort(key=lambda x:x[8], reverse=True)
+        total_list.sort(key=lambda x:x[9], reverse=True)
+        self.total_list = total_list
         return total_list
 
     def get_best_diff(self, col_index):
         res_list = []
         for col in self.skins.collection:
-            highs = []
-            for high in col.weapons[col_index + 1]:
-                tmp_high = [high]
-                for con in TUAnalyzer.conditions:
-                    ent = high.getLowestPriceCondition(con)
-                    tmp_high.append(ent.price if ent != None else None)
-                highs.append(tmp_high)
-            for low in col.weapons[col_index]:
-                for index, ent_list in enumerate(low.skin_list):
+            highs = self.__get_higher_tier__(col, col_index + 1)
+            for skin in col.weapons[col_index]:
+                for index, ent_list in enumerate(skin.skin_list):
                     con = TUAnalyzer.conditions[index]
                     for ent in ent_list:
                         if ent != None and ent.real_info:
@@ -57,34 +87,45 @@ class TUAnalyzer:
                                     skins_found += 1
                             if skins_found > 0:
                                 avg_cost /= skins_found
-                                res_list.append((ent, low.weapon, low.skin_name, col.stat_trak,
-                                            con, ent.sFloat, ent.price, avg_cost - ent.price, avg_cost/ent.price))
+                                res_list.append((ent, skin.weapon, skin.skin_name, col.stat_trak,
+                                            con, ent.sFloat, ent.price, avg_cost, avg_cost - ent.price, avg_cost/ent.price))
         return res_list
 
+    def __get_higher_tier__(self, col, index):
+        skins = []
+        for skin in col.weapons[index]:
+            tmp_skin_list = [skin]
+            for con in TUAnalyzer.conditions:
+                ent = skin.getLowestPriceCondition(con)
+                tmp_skin_list.append(ent.price if ent != None else None)
+            skins.append(tmp_skin_list)
+        return skins
+        
     def get_print_list(self):
         res_list = []
         for index, tu in enumerate(self.tu_lists):
-            tmp_str = "Trade Up #{}:\n".format(index + 1)
             if tu[0] >= 0:
-                tmp_str += "\tProfit = ${:.2f}:\n".format(tu[0])
-            else:
-                tmp_str += "\t-${:.2f}:\n".format(-tu[0])
-            tmp_str += "\t\tCost: ${:.2f}\n".format(TUAnalyzer.__get_price__(tu[1]))
-            for ent in tu[1]:
-                skin = ent.skin
-                condition = TUAnalyzer.__get_word_condition__(ent.sFloat)
-                skin_display = str(skin)
-                skin_display = skin_display[:skin_display.index('(')]
-                stat_string = "*" if skin.collection.stat_trak else ""
-                tmp_str += "\t\t{}{} ({}) : ${} ({:.3f})\n".format(
-                    skin_display, stat_string, condition, ent.price, ent.sFloat)
-            tmp_str += "\t\t--------OUTCOMES--------\n"
-            avg_price = TUAnalyzer.__get_avg_price__(tu[2])
-            tmp_str += "\t\tAvg Selling: ${:.2f} (${})\n".format(avg_price, self.skins.getSellerPrice(avg_price))
-            prob_list = self.__get_prob_list__(tu[2])
-            for skin in prob_list:
-                tmp_str += "\t\t{:.2%} | {}\n".format(skin[1], skin[0])
-            res_list.append(tmp_str + "\n")
+                tmp_str = "Trade Up #{}:\n".format(index + 1)
+                if tu[0] >= 0:
+                    tmp_str += "\tProfit = +${:.2f}:\n".format(tu[0])
+                else:
+                    tmp_str += "\tProfit = -${:.2f}:\n".format(-tu[0])
+                tmp_str += "\t\tCost: ${:.2f}\n".format(TUAnalyzer.__get_price__(tu[1]))
+                for ent in tu[1]:
+                    skin = ent.skin
+                    condition = TUAnalyzer.__get_word_condition__(ent.sFloat)
+                    skin_display = str(skin)
+                    skin_display = skin_display[:skin_display.index('(')]
+                    stat_string = "*" if skin.collection.stat_trak else ""
+                    tmp_str += "\t\t{}{} ({}) : ${} ({:.3f})\n".format(
+                        skin_display, stat_string, condition, ent.price, ent.sFloat)
+                tmp_str += "\t\t--------OUTCOMES--------\n"
+                avg_price = TUAnalyzer.__get_avg_price__(tu[2])
+                tmp_str += "\t\tAvg Selling: ${:.2f} (${})\n".format(avg_price, self.skins.getSellerPrice(avg_price))
+                prob_list = self.__get_prob_list__(tu[2])
+                for skin in prob_list:
+                    tmp_str += "\t\t{:.2%} | {}\n".format(skin[1], skin[0])
+                res_list.append(tmp_str + "\n")
         return str("".join(res_list))
 
     @staticmethod
